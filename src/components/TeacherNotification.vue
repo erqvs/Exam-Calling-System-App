@@ -91,7 +91,7 @@ export default defineComponent({
         };
 
         const connectWebSocket = () => {
-            const socket = new WebSocket('ws://localhost:3001'); // 连接到 WebSocket 服务器
+            const socket = new WebSocket('ws://172.22.228.69:3001'); // 连接到 WebSocket 服务器
             socket.onmessage = () => {
                 fetchRooms(); // 收到消息时更新考场信息
             };
@@ -113,7 +113,7 @@ export default defineComponent({
                 return;
             }
             try {
-                await axios.post('http://localhost:3001/api/exam_rooms/add', { roomInfo: newRoomName.value });
+                await axios.post('http://172.22.228.69:3001/api/exam_rooms/add', { roomInfo: newRoomName.value });
                 ElMessage({
                     type: 'success',
                     message: '考场已添加',
@@ -132,7 +132,7 @@ export default defineComponent({
 
         const fetchRooms = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/api/exam_rooms');
+                const response = await axios.get('http://172.22.228.69:3001/api/exam_rooms');
                 rooms.value = response.data;
                 setButtonSizes();
             } catch (error) {
@@ -174,7 +174,7 @@ export default defineComponent({
 
         const deleteSelectedRooms = async () => {
             try {
-                await axios.post('http://localhost:3001/api/exam_rooms/delete', { rooms: selectedRooms.value });
+                await axios.post('http://172.22.228.69:3001/api/exam_rooms/delete', { rooms: selectedRooms.value });
                 ElMessage({
                     type: 'success',
                     message: '考场已删除',
@@ -193,7 +193,7 @@ export default defineComponent({
 
         const fetchNextStudent = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/api/queue/next');
+                const response = await axios.get('http://172.22.228.69:3001/api/queue/next');
                 selectedStudent.value = response.data.student;
             } catch (error) {
                 console.error('获取下一个考生失败:', error);
@@ -243,7 +243,7 @@ export default defineComponent({
 
         const notifyNextStudent = async (room: string, studentId: string, studentName: string) => {
             try {
-                await axios.post('http://localhost:3001/api/queue/notify', { seatNumber: room });
+                await axios.post('http://172.22.228.69:3001/api/queue/notify', { seatNumber: room });
                 speakExamNotice(studentId, studentName, room);
 
                 // 获取下一个考生信息并检查是否继续语音提示

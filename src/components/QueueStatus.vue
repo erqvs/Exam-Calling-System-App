@@ -100,8 +100,8 @@ export default defineComponent({
             try {
                 // 同时获取考场信息和考生信息
                 const [roomsResponse, studentsResponse] = await Promise.all([
-                    axios.get('http://localhost:3001/api/exam_rooms'),
-                    axios.get('http://localhost:3001/api/queue/status'),
+                    axios.get('http://172.22.228.69:3001/api/exam_rooms'),
+                    axios.get('http://172.22.228.69:3001/api/queue/status'),
                 ]);
 
                 rooms.value = roomsResponse.data; // 更新考场信息
@@ -206,7 +206,7 @@ export default defineComponent({
         };
 
         const connectWebSocket = () => {
-            const socket = new WebSocket('ws://localhost:3001');
+            const socket = new WebSocket('ws://172.22.228.69:3001');
             socket.onmessage = (event) => {
                 const message = event.data;
                 if (message === 'update_queue' || message === 'update_rooms') {

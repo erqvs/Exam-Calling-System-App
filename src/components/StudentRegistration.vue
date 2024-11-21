@@ -53,7 +53,7 @@ export default defineComponent({
                 }
             ).then(async () => {
                 try {
-                    const response = await axios.post('http://localhost:3001/api/queue/clear');
+                    const response = await axios.post('http://172.22.228.69:3001/api/queue/clear');
                     ElNotification({
                         type: 'success',
                         message: response.data.message,
@@ -78,7 +78,7 @@ export default defineComponent({
         // 获取最后一个考生的 ID
         const fetchLastStudentId = async () => {
             try {
-                const response = await axios.get('http://172.22.228.136:3001/api/queue/list');
+                const response = await axios.get('http://172.22.228.69:3001/api/queue/list');
                 const students = response.data;
                 if (students.length > 0) {
                     lastStudentId.value = students[students.length - 1].id; // 获取最后一个考生的 ID
@@ -132,7 +132,7 @@ export default defineComponent({
                 return;
             }
 
-            axios.post('http://172.22.228.136:3001/api/queue/add', studentInfo)
+            axios.post('http://172.22.228.69:3001/api/queue/add', studentInfo)
                 .then(response => {
                     const currentStudentId = lastStudentId.value + 1;
                     ElMessageBox.confirm(
@@ -170,7 +170,7 @@ export default defineComponent({
 
         // 连接 WebSocket 服务器
         const connectWebSocket = () => {
-            socket = new WebSocket('ws://172.22.228.136:3001'); // 使用 WebSocket 服务器的地址
+            socket = new WebSocket('ws://172.22.228.69:3001'); // 使用 WebSocket 服务器的地址
 
             // 处理 WebSocket 连接关闭
             socket.onclose = () => {
