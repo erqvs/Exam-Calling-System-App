@@ -61,6 +61,7 @@ export default defineComponent({
         const selectedRooms = ref<string[]>([]);
         const selectedStudent = ref<{ id: number; name: string } | null>(null);
         const selectedRoom = ref<string>('');
+        const notificationSocket = new WebSocket('ws://172.22.228.69:3001');
 
         // 用于重新叫号的存储变量
         const lastStudentId = ref<string | null>(null);
@@ -91,16 +92,17 @@ export default defineComponent({
         };
 
         const connectWebSocket = () => {
-            const socket = new WebSocket('ws://172.22.228.69:3001'); // 连接到 WebSocket 服务器
-            socket.onmessage = () => {
-                fetchRooms(); // 收到消息时更新考场信息
+            notificationSocket.onopen = () => {
+                console.log('老师通知端 WebSocket 连接成功');
             };
-            socket.onclose = () => {
-                console.warn('WebSocket 连接已关闭，尝试重新连接...');
+
+            notificationSocket.onerror = (error) => {
+                console.error('WebSocket 错误:', error);
+            };
+
+            notificationSocket.onclose = () => {
+                console.warn('WebSocket 连接关闭，尝试重新连接...');
                 setTimeout(connectWebSocket, 5000); // 5秒后重试连接
-            };
-            socket.onerror = (error) => {
-                console.error('WebSocket 发生错误:', error);
             };
         };
 
@@ -241,6 +243,14 @@ export default defineComponent({
             });
         };
 
+        const sendBroadcastMessage = (type: string, content: string) => {
+            if (notificationSocket.readyState === WebSocket.OPEN) {
+                notificationSocket.send(JSON.stringify({ type, content }));
+            } else {
+                 console.warn('WebSocket 未连接，无法发送消息');
+            }
+        };
+
         const notifyNextStudent = async (room: string, studentId: string, studentName: string) => {
             try {
                 await axios.post('http://172.22.228.69:3001/api/queue/notify', { seatNumber: room });
@@ -277,16 +287,12 @@ export default defineComponent({
 
         const speakExamNotice = (studentId: string, studentName: string, room: string) => {
             const text = `请${studentId}号${studentName}到${room}考场考试`;
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-CN';
-            speechSynthesis.speak(utterance);
+            sendBroadcastMessage('examNotice', text); // 发送消息
         };
 
         const speakWaitNotice = (studentId: string, studentName: string) => {
             const text = `${studentId}号${studentName}请准备`;
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-CN';
-            speechSynthesis.speak(utterance);
+            sendBroadcastMessage('waitNotice', text); // 发送消息
         };
 
         onMounted(() => {

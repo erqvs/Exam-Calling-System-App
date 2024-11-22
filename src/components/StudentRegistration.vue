@@ -147,10 +147,10 @@ export default defineComponent({
                         }
                     );
 
-                    // 发送 WebSocket 消息通知其他客户端
-                    if (socket && socket.readyState === WebSocket.OPEN) {
-                        socket.send('new student added');
-                    }
+                    // // 发送 WebSocket 消息通知其他客户端
+                    // if (socket && socket.readyState === WebSocket.OPEN) {
+                    //     socket.send('new student added');
+                    // }
 
                     // 清空输入字段
                     studentInfo.idCardNumber = '';

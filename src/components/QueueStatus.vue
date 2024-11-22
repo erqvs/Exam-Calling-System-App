@@ -207,16 +207,50 @@ export default defineComponent({
 
         const connectWebSocket = () => {
             const socket = new WebSocket('ws://172.22.228.69:3001');
-            socket.onmessage = (event) => {
-                const message = event.data;
+            socket.onmessage = async (event) => {
+            let message;
+
+            // 检查 WebSocket 消息类型
+            if (typeof event.data === 'string') {
+                // 如果消息是字符串
+                message = event.data.trim();
+            } else if (event.data instanceof Blob) {
+                // 如果消息是 Blob 对象，将其读取为字符串
+                message = await event.data.text();
+            } else {
+                console.error('未知的 WebSocket 消息格式:', event.data);
+                return;
+            }
+
+            try {
+                // 优先尝试解析为 JSON
+                const parsedMessage = JSON.parse(message);
+
+                // 根据 JSON 消息类型处理
+                if (parsedMessage.type === 'examNotice') {
+                    speakMessage(parsedMessage.content); // 播报语音消息
+                } else if (parsedMessage.type === 'waitNotice') {
+                    speakMessage(parsedMessage.content); // 播报语音消息
+                } else if (parsedMessage.type === 'update_queue' || parsedMessage.type === 'update_rooms') {
+                    fetchQueueStatus(); // 更新队列和考场信息
+                } else {
+                    console.warn('未知的 JSON 消息类型:', parsedMessage);
+                }
+            } catch (e) {
+                // 如果消息不是 JSON 格式，按非 JSON 的逻辑处理
                 if (message === 'update_queue' || message === 'update_rooms') {
-                    fetchQueueStatus(); // 收到更新消息时，重新获取考场和考生信息
+                    fetchQueueStatus(); // 更新队列和考场信息
                 } else if (message.startsWith('callout:')) {
                     const [_, student, room] = message.split(':');
-                    showDialogWithContent(student, room); // 显示考生信息和考场名称
+                    showDialogWithContent(student, room); // 显示考生和考场信息
                     fetchQueueStatus();
+                } else {
+                    console.error('无法解析的 WebSocket 消息:', message);
                 }
-            };
+            }
+        };
+
+
             socket.onclose = () => {
                 console.warn('WebSocket 连接已关闭，尝试重新连接...');
                 setTimeout(connectWebSocket, 5000);
@@ -251,6 +285,13 @@ export default defineComponent({
                 cell.style.width = `${cellHeight * 3.4}px`;
             });
         };
+
+        const speakMessage = (text: string) => {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-CN';
+            speechSynthesis.speak(utterance);
+        };
+
 
         const handleResize = () => {
             adjustCellSize();
